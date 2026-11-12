@@ -1,0 +1,27 @@
+---
+import Base from '../layouts/Base.astro';
+import PageIntro from '../components/PageIntro.astro';
+import CtaBlock from '../components/CtaBlock.astro';
+import GpStatement from '../components/GpStatement.astro';
+import FaqList from '../components/FaqList.astro';
+import { faqs } from '../data/site';
+import { faqSchema } from '../data/schema';
+---
+<Base
+  title="Homeopathy Consultation FAQs | Newport Homeopathy Clinic"
+  description="Answers to common questions about booking, fees, online appointments, parking and what happens at a homeopathy consultation in Newport."
+  breadcrumbs={[{ name: 'FAQs', href: '/frequently-asked-questions/' }]}
+  schema={[faqSchema()]}
+>
+  <PageIntro
+    h1="Frequently Asked Questions"
+    lead="Quick answers about booking, fees, online appointments and what happens at a homeopathy consultation in Newport, Shropshire."
+  />
+  <section style="padding-top:0">
+    <div class="container text-col">
+      <FaqList items={faqs} open />
+      <GpStatement />
+    </div>
+  </section>
+  <CtaBlock />
+</Base>

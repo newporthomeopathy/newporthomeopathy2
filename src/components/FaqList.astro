@@ -1,0 +1,13 @@
+---
+// Native <details>: works without JS, content is in the HTML for crawlers.
+interface Props { items: { q: string; a: string; link?: { href: string; label: string } }[]; open?: boolean }
+const { items, open = false } = Astro.props;
+---
+<div class="faq-list">
+  {items.map((f) => (
+    <details open={open}>
+      <summary><h3>{f.q}</h3></summary>
+      <p>{f.a} {f.link && <a href={f.link.href}>{f.link.label}</a>}</p>
+    </details>
+  ))}
+</div>

@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /book-appointment/thank-you/
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+Sitemap: https://newporthomeopathy.com/sitemap-index.xml

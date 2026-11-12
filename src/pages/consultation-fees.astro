@@ -1,0 +1,34 @@
+---
+import Base from '../layouts/Base.astro';
+import PageIntro from '../components/PageIntro.astro';
+import CtaBlock from '../components/CtaBlock.astro';
+import { clinic, fees } from '../data/site';
+import { serviceSchema } from '../data/schema';
+---
+<Base
+  title="Homeopathy Consultation Fees | Newport Homeopathy Clinic"
+  description="Initial homeopathy consultation £50 (30–90 minutes); follow-up £30. Pay by cash or bank transfer. In Newport, Shropshire or online."
+  breadcrumbs={[{ name: 'Consultation Fees', href: '/consultation-fees/' }]}
+  schema={[serviceSchema('in-person'), serviceSchema('online')]}
+>
+  <PageIntro
+    h1="Consultation Fees"
+    lead={`An initial homeopathy consultation costs £${fees.initial.price} and lasts ${fees.initial.duration}. Follow-up consultations cost £${fees.followUp.price}. Fees are the same in person in Newport and online.`}
+  />
+  <section style="padding-top:0">
+    <div class="container text-col">
+      <table class="fees">
+        <thead><tr><th scope="col">Appointment</th><th scope="col">Length</th><th scope="col">In person</th><th scope="col">Online</th></tr></thead>
+        <tbody>
+          <tr><td>{fees.discovery.label}</td><td>{fees.discovery.duration}</td><td>Free</td><td>Free</td></tr>
+          <tr><td>{fees.initial.label}</td><td>{fees.initial.duration}</td><td>£{fees.initial.price}</td><td>£{fees.initial.price}</td></tr>
+          <tr><td>{fees.followUp.label}</td><td>{fees.followUp.duration}</td><td>£{fees.followUp.price}</td><td>£{fees.followUp.price}</td></tr>
+        </tbody>
+      </table>
+      <div class="prose" style="margin-top:24px">
+        <p>Payment: {clinic.payment}. Follow-ups are usually {fees.followUp.interval}. A free 15-minute chat is available before you book. <a href="/booking-terms/">Booking terms</a> · <a href="/what-to-expect/">What to expect</a></p>
+      </div>
+    </div>
+  </section>
+  <CtaBlock />
+</Base>

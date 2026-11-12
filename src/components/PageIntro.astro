@@ -1,0 +1,12 @@
+---
+// H1 + 1–2 sentence answer-first summary (spec Part 5 "Other page templates").
+interface Props { h1: string; lead: string }
+const { h1, lead } = Astro.props;
+---
+<section class="page-intro">
+  <div class="container text-col">
+    <h1>{h1}</h1>
+    <p class="lead">{lead}</p>
+    <slot />
+  </div>
+</section>

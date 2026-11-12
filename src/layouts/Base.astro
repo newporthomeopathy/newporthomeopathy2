@@ -1,0 +1,198 @@
+---
+import '../styles/global.css';
+import { Image } from 'astro:assets';
+import logo from '../assets/logo.png';
+import { SITE, clinic, nav, addressLine, gpStatementShort } from '../data/site';
+import { siteGraph, breadcrumbSchema } from '../data/schema';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import Icon from '../components/Icon.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  breadcrumbs?: { name: string; href: string }[];
+  schema?: object[];
+  noindex?: boolean;
+  ogType?: 'website' | 'article';
+  /** Blog posts: ISO dates for article:published_time / modified_time. */
+  published?: Date;
+  updated?: Date;
+  /** Largest-contentful-paint image to preload (responsive srcset). */
+  lcpImage?: { srcset: string; sizes: string; type: string };
+}
+const { title, description, breadcrumbs, schema = [], noindex = false, ogType = 'website', published, updated, lcpImage } = Astro.props;
+const ogImage = `${SITE}/og-image.jpg`;
+const ogImageAlt = `${clinic.name}: homeopathy consultations in Newport, Shropshire and online`;
+const path = Astro.url.pathname;
+const canonical = `${SITE}${path}`;
+const allSchema = [siteGraph(), ...(breadcrumbs?.length ? [breadcrumbSchema(breadcrumbs)] : []), ...schema];
+const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
+const year = new Date().getFullYear();
+const gaId = import.meta.env.PUBLIC_GA_ID ?? '';
+---
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+    <meta name="robots" content={noindex ? 'noindex, follow' : 'index, follow, max-image-preview:large, max-snippet:-1'} />
+    <link rel="canonical" href={canonical} />
+    <meta name="theme-color" content="#ffffff" />
+    <link rel="preload" href="/fonts/open-sans-latin.woff2" as="font" type="font/woff2" crossorigin />
+    {lcpImage && <link rel="preload" as="image" imagesrcset={lcpImage.srcset} imagesizes={lcpImage.sizes} type={lcpImage.type} fetchpriority="high" />}
+
+    <meta property="og:type" content={ogType} />
+    <meta property="og:site_name" content={clinic.name} />
+    <meta property="og:title" content={title} />
+    {description && <meta property="og:description" content={description} />}
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={ogImageAlt} />
+    <meta property="og:locale" content="en_GB" />
+    {published && <meta property="article:published_time" content={published.toISOString()} />}
+    {(updated ?? published) && <meta property="article:modified_time" content={(updated ?? published)!.toISOString()} />}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    {description && <meta name="twitter:description" content={description} />}
+    <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image:alt" content={ogImageAlt} />
+    <meta name="format-detection" content="telephone=yes" />
+
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    {allSchema.map((s) => <script is:inline type="application/ld+json" set:html={JSON.stringify(s)} />)}
+
+    <script is:inline define:vars={{ gaId }}>
+      // Consent Mode v2: everything denied until the visitor accepts (spec Part 9).
+      window.dataLayer = window.dataLayer || [];
+      window.gtag = function () { dataLayer.push(arguments); };
+      gtag('consent', 'default', { ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied', analytics_storage: 'denied' });
+      window.__GA_ID = gaId;
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to main content</a>
+
+    <div class="topbar">
+      <div class="container topbar-inner">
+        <a href={`tel:${clinic.phoneTel}`} data-track="click_call" data-loc="header"><Icon name="phone" /> {clinic.phoneDisplay}</a>
+        <a href={clinic.whatsapp} rel="noopener" data-track="click_whatsapp" data-loc="header"><Icon name="whatsapp" /> WhatsApp</a>
+        <a href={`mailto:${clinic.email}`} data-track="click_email" data-loc="header"><Icon name="mail" /> {clinic.email}</a>
+        <span class="topbar-hours">{clinic.hoursShort}</span>
+      </div>
+    </div>
+
+    <header class="site-header">
+      <div class="container header-inner">
+        <a href="/" class="logo">
+          <Image src={logo} alt={clinic.name} width={224} height={50} loading="eager" densities={[1, 2]} />
+        </a>
+        <button type="button" class="nav-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="site-nav">
+          <Icon name="menu" class="icon-open" /><Icon name="close" class="icon-close" />
+        </button>
+        <nav id="site-nav" class="site-nav" aria-label="Main">
+          <ul>
+            {nav.map((item) =>
+              item.children ? (
+                <li class="has-sub">
+                  <details>
+                    <summary>{item.label}</summary>
+                    <ul>
+                      {item.children.map((c) => (
+                        <li><a href={c.href} aria-current={isActive(c.href) ? 'page' : undefined}>{c.label}</a></li>
+                      ))}
+                    </ul>
+                  </details>
+                </li>
+              ) : (
+                <li><a href={item.href} aria-current={isActive(item.href!) ? 'page' : undefined}>{item.label}</a></li>
+              )
+            )}
+          </ul>
+          <a href="/book-appointment/" class="btn btn-primary" data-track="click_book" data-loc="header">Book a consultation</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      {breadcrumbs?.length && <Breadcrumbs items={breadcrumbs} />}
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-grid">
+        <div class="footer-about">
+          <a href="/" class="footer-logo"><Image src={logo} alt={clinic.name} width={196} height={44} loading="lazy" densities={[1, 2]} /></a>
+          <p class="footer-line"><Icon name="user" /> <a href="/about-kavita-batchu/">{clinic.practitioner}, {clinic.qualification} · Homeopath</a></p>
+          <address class="footer-line"><Icon name="pin" /> <a href={clinic.mapsUrl} rel="noopener" data-track="click_directions" data-loc="footer">{addressLine}</a></address>
+          <p class="footer-line"><Icon name="phone" /> <a href={`tel:${clinic.phoneTel}`} data-track="click_call" data-loc="footer">{clinic.phoneIntl}</a></p>
+          <p class="footer-line"><Icon name="whatsapp" /> <a href={clinic.whatsapp} rel="noopener" data-track="click_whatsapp" data-loc="footer">WhatsApp</a></p>
+          <p class="footer-line"><Icon name="mail" /> <a href={`mailto:${clinic.email}`} data-track="click_email" data-loc="footer">{clinic.email}</a></p>
+          <p class="footer-line"><Icon name="clock" /> <span>{clinic.hoursText}</span></p>
+        </div>
+        <div>
+          <p class="footer-heading">Services</p>
+          <ul>
+            <li><a href="/services/">All services</a></li>
+            <li><a href="/homeopathy-consultations/">In person in Newport</a></li>
+            <li><a href="/online-homeopathy-consultation/">Online across the UK</a></li>
+            <li><a href="/consultation-fees/">Fees</a></li>
+            <li><a href="/what-to-expect/">What to expect</a></li>
+            <li><a href="/areas-we-serve/">Areas we serve</a></li>
+            <li><a href="/book-appointment/">Book a consultation</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="footer-heading">Clinic</p>
+          <ul>
+            <li><a href="/about-kavita-batchu/">About Kavita Batchu</a></li>
+            <li><a href="/frequently-asked-questions/">FAQs</a></li>
+            <li><a href="/blog/">Guides and articles</a></li>
+            <li><a href="/contact/">Contact and directions</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="footer-heading">Policies</p>
+          <ul>
+            <li><a href="/privacy-policy/">Privacy policy</a></li>
+            <li><a href="/cookie-policy/">Cookie policy</a></li>
+            <li><a href="/booking-terms/">Booking terms</a></li>
+            <li><button type="button" class="link-button" data-cookie-settings>Cookie settings</button></li>
+          </ul>
+          {clinic.social.facebook && <a href={clinic.social.facebook} rel="noopener" aria-label="Facebook">Facebook</a>}
+          {clinic.social.instagram && <a href={clinic.social.instagram} rel="noopener" aria-label="Instagram">Instagram</a>}
+        </div>
+      </div>
+      <div class="container footer-base">
+        <p>{gpStatementShort}</p>
+        <p>© {year} {clinic.name} · Designed &amp; Developed by Articog Tech LLP</p>
+      </div>
+    </footer>
+
+    <nav class="mobile-actions" aria-label="Quick contact">
+      <a href={`tel:${clinic.phoneTel}`} data-track="click_call" data-loc="sticky_bar"><Icon name="phone" /> Call</a>
+      <a href={clinic.whatsapp} rel="noopener" data-track="click_whatsapp" data-loc="sticky_bar"><Icon name="whatsapp" /> WhatsApp</a>
+      <a href="/book-appointment/" data-track="click_book" data-loc="sticky_bar"><Icon name="calendar" /> Book</a>
+    </nav>
+
+    <div class="cookie-banner" role="region" aria-label="Cookie consent" hidden>
+      <p>We'd like to use analytics cookies to understand how visitors use this site. They are off unless you accept. <a href="/cookie-policy/">Cookie policy</a></p>
+      <div class="cookie-actions">
+        <button type="button" class="btn btn-outline" data-consent="reject">Reject</button>
+        <button type="button" class="btn btn-outline" data-consent="accept">Accept</button>
+      </div>
+    </div>
+
+    <script>
+      import '../scripts/site.ts';
+    </script>
+  </body>
+</html>

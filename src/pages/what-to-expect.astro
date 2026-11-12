@@ -1,0 +1,32 @@
+---
+import Base from '../layouts/Base.astro';
+import PageIntro from '../components/PageIntro.astro';
+import CtaBlock from '../components/CtaBlock.astro';
+import { clinic, fees } from '../data/site';
+---
+<Base
+  title="What to Expect at Your Homeopathy Consultation"
+  description="What happens at your first homeopathy consultation in Newport, how to prepare, how long it takes and how follow-up appointments work."
+  breadcrumbs={[{ name: 'What to expect', href: '/what-to-expect/' }]}
+>
+  <PageIntro
+    h1="What to Expect at Your Consultation"
+    lead={`Your first consultation with ${clinic.practitioner} lasts ${fees.initial.duration} and costs £${fees.initial.price}. It is a detailed, private conversation about your health history, lifestyle and wellbeing, in Newport or online.`}
+  />
+  <section style="padding-top:0">
+    <div class="container prose">
+      <h2>Before you book</h2>
+      <p>Ask for a free 15-minute chat if you're unsure.</p>
+      <h2>How to prepare</h2>
+      <ul>
+        <li>A list of any medicines and supplements you take.</li>
+        <li>Allow up to 90 minutes.</li>
+      </ul>
+      <h2>During and after</h2>
+      <p>Kavita asks about your health history, lifestyle and wellbeing. Follow-ups are usually {fees.followUp.interval} (£{fees.followUp.price}).</p>
+      <p>Please keep seeing your GP and do not stop or change prescribed medication without medical advice.</p>
+      <p><a href="/homeopathy-consultations/">In person</a> · <a href="/online-homeopathy-consultation/">Online</a> · <a href="/consultation-fees/">Fees</a></p>
+    </div>
+  </section>
+  <CtaBlock />
+</Base>

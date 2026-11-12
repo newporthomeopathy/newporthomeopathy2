@@ -1,0 +1,41 @@
+# Changelog
+
+## Version 3.0.0 (12 November 2026)
+
+- New photo of Kavita Batchu in the "Meet your homeopath" section on the home page and on the About page. It replaces the earlier banner.
+
+## Version 2.0.0 (12 November 2026)
+
+A complete rebuild of newporthomeopathy.com, replacing the version 1 template site.
+
+**Site**
+- New static site built with Astro and deployed on Vercel, replacing the Medilab Bootstrap / PHP template.
+- 16 pages: Home, Services, In-person and Online consultations, Fees, What to expect, About, Areas we serve, FAQs, Blog, Book, Contact, Privacy, Cookies, Booking terms, plus a thank-you page and a 404 page.
+- Rounded, minimal design in Open Sans. Colours are limited to blue, black, greys and white.
+- New logo, studio portrait and banner, and a full-cover hero photo.
+
+**Bookings and leads**
+- Book, Call and WhatsApp on every page, with a sticky action bar on mobile.
+- Working enquiry form with server-side validation, spam protection and an automatic acknowledgement email. It also works without JavaScript.
+- Free 15-minute discovery chat added as a service.
+- Clinic email: cavitasuresh@yahoo.com.
+
+**Search and AI visibility**
+- A unique title, description and H1 on every page. Canonical URLs, Open Graph and Twitter tags.
+- Structured data: business, person, services and offers, FAQs, breadcrumbs, blog posts.
+- `robots.txt` (AI search crawlers allowed), XML sitemap and `llms.txt`.
+- Redirects from www and the old URLs, plus security and caching headers.
+
+**Compliance**
+- All copy rewritten to the UK ASA / CAP rules for homeopathy: no condition lists and no treatment or safety claims. The GP statement is on the key pages.
+- The build fails automatically if banned wording appears.
+
+**Performance**
+- About 110 KB to first view on mobile, with no layout shift. Images are converted to AVIF and WebP, and CSS and JavaScript are inlined.
+
+**Docs**
+- README, `docs/CONTENT-GUIDE.md`, `docs/DEPLOYMENT.md` and `docs/LAUNCH-CHECKLIST.md`.
+
+## Version 1 (2021–2025)
+
+The original site: a single-page Medilab Bootstrap template with PHP forms.

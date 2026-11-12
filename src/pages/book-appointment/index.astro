@@ -1,0 +1,139 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageIntro from '../../components/PageIntro.astro';
+import Icon from '../../components/Icon.astro';
+import { clinic, fees } from '../../data/site';
+
+// Server-rendered so errors returned by /api/enquiry show even without JavaScript (spec Part 4).
+export const prerender = false;
+
+const params = Astro.url.searchParams;
+const errorCodes = (params.get('error') ?? '').split(',').filter(Boolean);
+const FIELD_MSG: Record<string, string> = {
+  name: 'Please enter your full name (2–80 characters).',
+  email: 'Please enter a valid email address.',
+  phone: 'Please enter a UK phone number, for example 07700 900123.',
+  type: 'Please choose a consultation type.',
+  format: 'Please choose in person, online or phone.',
+  date: 'Please choose a date from today, Monday to Saturday.',
+  consent: 'Please tick the box so we can contact you about your enquiry.',
+};
+const GLOBAL_MSG: Record<string, string> = {
+  rate: 'Too many enquiries from this connection. Please call or WhatsApp us instead.',
+  captcha: 'The spam check failed. Please try again.',
+  send: "Sorry, we couldn't send your enquiry. Please call or WhatsApp us instead.",
+};
+const fieldErr = (f: string) => (errorCodes.includes(f) ? FIELD_MSG[f] : '');
+const globalMsg = errorCodes.map((c) => GLOBAL_MSG[c]).find(Boolean)
+  ?? (errorCodes.length ? 'Please check the fields marked below.' : '');
+const presetType = params.get('type') ?? '';
+const turnstileKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? '';
+const bookingEmbed = import.meta.env.PUBLIC_BOOKING_EMBED_URL ?? ''; // Setmore / Calendly / Cliniko, once chosen
+---
+<Base
+  title="Book a Homeopathy Consultation | Newport Homeopathy Clinic"
+  description="Book an in-person consultation in Newport, Shropshire or an online consultation. Initial consultation £50. Call, WhatsApp or book online."
+  breadcrumbs={[{ name: 'Book a consultation', href: '/book-appointment/' }]}
+>
+  <PageIntro
+    h1="Book a Consultation"
+    lead={`Initial consultation £${fees.initial.price}, follow-up £${fees.followUp.price}, free 15-minute chat. In Newport or online. We reply within one working day.`}
+  >
+    <div class="contact-options">
+      <a href={`tel:${clinic.phoneTel}`} class="contact-option" data-track="click_call" data-loc="page"><span class="card-icon" style="margin:0"><Icon name="phone" /></span><span><strong>Call {clinic.phoneDisplay}</strong><small>{clinic.hoursShort}</small></span></a>
+      <a href={clinic.whatsapp} class="contact-option" rel="noopener" data-track="click_whatsapp" data-loc="page"><span class="card-icon" style="margin:0"><Icon name="whatsapp" /></span><span><strong>WhatsApp</strong><small>Message any time, we reply within one working day</small></span></a>
+    </div>
+  </PageIntro>
+
+  <section style="padding-top:8px">
+    <div class="container text-col">
+      {bookingEmbed ? (
+        <iframe src={bookingEmbed} title="Online booking" style="width:100%;height:760px;border:0" loading="lazy"></iframe>
+      ) : (
+        <>
+          <h2 id="enquiry">Or send an enquiry</h2>
+                    <form class="enquiry-form" method="post" action="/api/enquiry/" novalidate>
+            <p role="alert" aria-live="polite" class="error form-status">{globalMsg}</p>
+
+            <div class="field">
+              <label for="name">Full name <span class="req">(required)</span></label>
+              <input id="name" name="name" type="text" autocomplete="name" required minlength="2" maxlength="80" aria-describedby="name-error" />
+              <p id="name-error" class="error" aria-live="polite">{fieldErr('name')}</p>
+            </div>
+            <div class="form-row">
+            <div class="field">
+              <label for="email">Email <span class="req">(required)</span></label>
+              <input id="email" name="email" type="email" autocomplete="email" required maxlength="120" aria-describedby="email-error" />
+              <p id="email-error" class="error" aria-live="polite">{fieldErr('email')}</p>
+            </div>
+            <div class="field">
+              <label for="phone">Phone <span class="req">(required)</span></label>
+              <input id="phone" name="phone" type="tel" autocomplete="tel" required pattern="^(\+44\s?|0)[0-9\s]{9,13}$" aria-describedby="phone-hint phone-error" />
+              <p id="phone-hint" class="hint">A UK number, for example 07700 900123.</p>
+              <p id="phone-error" class="error" aria-live="polite">{fieldErr('phone')}</p>
+            </div>
+            </div>
+            <div class="field">
+              <label for="type">Consultation type <span class="req">(required)</span></label>
+              <select id="type" name="type" required aria-describedby="type-error">
+                <option value="">Please choose</option>
+                <option value="discovery" selected={presetType === 'discovery'}>Free discovery chat ({fees.discovery.duration})</option>
+                <option value="initial" selected={presetType === 'initial'}>Initial consultation (£{fees.initial.price})</option>
+                <option value="follow_up" selected={presetType === 'follow_up'}>Follow-up consultation (£{fees.followUp.price})</option>
+              </select>
+              <p id="type-error" class="error" aria-live="polite">{fieldErr('type')}</p>
+            </div>
+            <fieldset class="field">
+              <legend>Format <span class="req">(required)</span></legend>
+              {fieldErr('format') && <p class="error">{fieldErr('format')}</p>}
+              <div class="radio-row">
+                <label><input type="radio" name="format" value="in_person" required /> In person (Newport)</label>
+                <label><input type="radio" name="format" value="online" /> Online (video)</label>
+                <label><input type="radio" name="format" value="phone" /> Phone</label>
+              </div>
+            </fieldset>
+            <div class="form-row">
+            <div class="field">
+              <label for="date">Preferred date <span class="req">(optional, Monday–Saturday)</span></label>
+              <input id="date" name="date" type="date" aria-describedby="date-error" />
+              <p id="date-error" class="error" aria-live="polite">{fieldErr('date')}</p>
+            </div>
+            <div class="field">
+              <label for="time">Preferred time <span class="req">(optional)</span></label>
+              <select id="time" name="time">
+                <option value="">No preference</option>
+                <option value="morning">Morning</option>
+                <option value="afternoon">Afternoon</option>
+                <option value="late_afternoon">Late afternoon</option>
+              </select>
+            </div>
+            </div>
+            <div class="field">
+              <label for="message">Message <span class="req">(optional)</span></label>
+              <textarea id="message" name="message" maxlength="500" aria-describedby="message-hint"></textarea>
+              <p id="message-hint" class="hint">Please don't include medical details here. Maximum 500 characters.</p>
+            </div>
+            <div class="hp" aria-hidden="true">
+              <label for="company">Leave this field empty</label>
+              <input id="company" name="company" type="text" tabindex="-1" autocomplete="off" />
+            </div>
+            <div class="field check">
+              <label><input type="checkbox" name="consent" value="yes" required aria-describedby="consent-error" /> I agree to be contacted about my enquiry. See our <a href="/privacy-policy/">privacy policy</a>.</label>
+              <p id="consent-error" class="error" aria-live="polite">{fieldErr('consent')}</p>
+            </div>
+            {turnstileKey && (
+              <>
+                <div class="cf-turnstile" data-sitekey={turnstileKey}></div>
+                <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+              </>
+            )}
+            <div>
+              <button type="submit" class="btn btn-primary btn-lg">Send enquiry</button>
+            </div>
+            <p class="hint">By sending this form you agree to our <a href="/booking-terms/">booking terms</a>.</p>
+          </form>
+        </>
+      )}
+    </div>
+  </section>
+</Base>

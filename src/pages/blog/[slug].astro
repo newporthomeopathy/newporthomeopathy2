@@ -1,0 +1,51 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import CtaBlock from '../../components/CtaBlock.astro';
+import { Image } from 'astro:assets';
+import portrait from '../../assets/kavita-portrait.jpg';
+import { clinic } from '../../data/site';
+import { blogPostingSchema } from '../../data/schema';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog', (p) => !p.data.draft);
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post, others: posts.filter((o) => o.id !== post.id).slice(0, 3) } }));
+}
+const { post, others } = Astro.props;
+const { Content } = await render(post);
+const d = post.data;
+const fmt = (x: Date) => x.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+---
+<Base
+  title={d.title}
+  description={d.description}
+  ogType="article"
+  published={d.published}
+  updated={d.updated}
+  breadcrumbs={[{ name: 'Guides and articles', href: '/blog/' }, { name: d.title, href: `/blog/${post.id}/` }]}
+  schema={[blogPostingSchema({ title: d.title, description: d.description, slug: post.id, published: d.published, updated: d.updated })]}
+>
+  <article class="container prose" style="padding-top:24px">
+    <h1>{d.title}</h1>
+    <p class="post-meta">
+      Published <time datetime={d.published.toISOString().slice(0, 10)}>{fmt(d.published)}</time>
+      {d.updated && <> · Updated <time datetime={d.updated.toISOString().slice(0, 10)}>{fmt(d.updated)}</time></>}
+      · Reviewed by <a href="/about-kavita-batchu/">{clinic.practitioner}, {clinic.qualification}</a>
+    </p>
+    <Content />
+    <aside class="author-box">
+      <Image src={portrait} alt="Kavita Batchu" width={128} height={128} loading="lazy" />
+      <div>
+        <p style="margin:0"><strong><a href="/about-kavita-batchu/">{clinic.practitioner}, {clinic.qualification}</a></strong></p>
+        <p style="margin:0">Homeopath with over {clinic.years} years' experience, offering consultations in Newport, Shropshire and online.</p>
+      </div>
+    </aside>
+    {others.length > 0 && (
+      <>
+        <h2>Related guides</h2>
+        <ul>{others.map((o) => <li><a href={`/blog/${o.id}/`}>{o.data.title}</a></li>)}</ul>
+      </>
+    )}
+  </article>
+  <CtaBlock />
+</Base>
